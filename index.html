@@ -64,62 +64,68 @@
         </div>
     </div>
 
-     <script>
-        // menambahkan elemen-elemen html
-        const form = document.getElementById('contactForm');
-        const nameInput = document.getElementById('name');
-        const phoneInput = document.getElementById('phone');
-        const emailInput = document.getElementById('email');
-        const messageInput = document.getElementById('message');
-        const submitBtn = document.getElementById('submitBtn');
-        const cancelBtn = document.getElementById('cancelBtn');
-        const formTitle = document.getElementById('formTitle');
-        const searchBox = document.getElementById('searchBox');
-        const contactsList = document.getElementById('contactsList');
+    <script>
+        // Tunggu hingga DOM siap
+            document.addEventListener('DOMContentLoaded', () => {
+        // Ambil elemen-elemen dari HTML
+            const form = document.getElementById('contactForm');
+            const nameInput = document.getElementById('name');
+            const phoneInput = document.getElementById('phone');
+            const emailInput = document.getElementById('email');
+            const messageInput = document.getElementById('message');
+            const submitBtn = document.getElementById('submitBtn');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const formTitle = document.getElementById('formTitle');
+            const searchBox = document.getElementById('searchBox');
+            const contactsList = document.getElementById('contactsList');
 
-        // mendeklarasikan variabel
+        // Variabel global
             let contacts = [];
             let editingIndex = null;
 
-        // Fungsi hapus pesan "Belum ada kontak"
+        // Fungsi untuk menghapus pesan kosong
             function removeEmptyState() {
             const empty = document.querySelector('.empty-state');
-        if (empty) empty.remove();
+            if (empty) empty.remove();
         }
 
-        // Tampilkan kontak (atau daftar hasil pencarian)
+        // Fungsi untuk menampilkan daftar kontak
             function showContacts(filteredContacts = contacts) {
-                contactsList.innerHTML = '';
-               if (filteredContacts.length === 0) {
-            contactsList.innerHTML = `
-            <div class="empty-state">
-                <div style="font-size:4em; margin-bottom:20px; opacity:0.3;">📱</div>
-                <h3>Belum ada kontak</h3>
-                <p>Cari someone to talk? Isi form di kiri dan temukan teman curhat terbaikmu!</p>
-            </div>`;
+      contactsList.innerHTML = '';
+
+      if (filteredContacts.length === 0) {
+        contactsList.innerHTML = `
+          <div class="empty-state">
+            <div style="font-size:4em; margin-bottom:20px; opacity:0.3;">📱</div>
+            <h3>Belum ada kontak</h3>
+            <p>Cari someone to talk? Isi form di kiri dan temukan teman curhat terbaikmu!</p>
+          </div>
+        `;
         return;
+      }
+
+      filteredContacts.forEach((contact, index) => {
+        const card = document.createElement('div');
+        card.className = 'contact-card';
+
+        let html = `<h3>${contact.name}</h3>`;
+        html += `<p>📞 ${contact.phone}</p>`;
+        if (contact.email) html += `<p>✉ ${contact.email}</p>`;
+        if (contact.message) html += `<p>📝 ${contact.message}</p>`;
+        html += `
+          <div class="contact-actions">
+            <button class="btn btn-edit" onclick="editContact(${index})">✏️ Edit</button>
+            <button class="btn btn-delete" onclick="deleteContact(${index})">🗑️ Hapus</button>
+          </div>
+        `;
+
+        card.innerHTML = html;
+        contactsList.appendChild(card);
+      });
     }
 
-        filteredContacts.forEach((contact, index) => {
-            const card = document.createElement('div');
-            card.className = 'contact-card';
-                let html = `<h3>${contact.name}</h3>`;
-                html += `<p>📞 ${contact.phone}</p>`;
-           if (contact.email) html += `<p>✉ ${contact.email}</p>`;
-           if (contact.message) html += `<p>📝 ${contact.message}</p>`;
-           html += `
-            <div class="contact-actions">
-                <button class="btn btn-edit" onclick="editContact(${index})">✏️ Edit</button>
-                <button class="btn btn-delete" onclick="deleteContact(${index})">🗑️ Hapus</button>
-            </div>
-            `;
-                card.innerHTML = html;
-                contactsList.appendChild(card);
-           });
-        }
-
-        // Tambah atau update kontak saat submit form
-            form.addEventListener('submit', e => {
+         // Saat form disubmit
+            form.addEventListener('submit', (e) => {
             e.preventDefault();
 
             const name = nameInput.value.trim();
@@ -127,28 +133,28 @@
             const email = emailInput.value.trim();
             const message = messageInput.value.trim();
 
-        if(name === '' || phone === '') {
+            if (name === '' || phone === '') {
             alert('Nama dan Nomor Telepon wajib diisi!');
             return;
         }
 
-        const newContact = {name, phone, email, message};
+            const newContact = { name, phone, email, message };
 
-        if(editingIndex !== null) {
+            if (editingIndex !== null) {
             contacts[editingIndex] = newContact;
             editingIndex = null;
             submitBtn.textContent = 'Simpan Kontak';
             formTitle.textContent = 'Tambah Kontak Baru';
             cancelBtn.style.display = 'none';
         } else {
-            contacts.push(newContact);
+        contacts.push(newContact);
         }
 
         form.reset();
         showContacts();
     });
 
-        // Tombol batal untuk membatalkan edit
+        // Saat tombol batal diklik
             cancelBtn.addEventListener('click', () => {
             form.reset();
             editingIndex = null;
@@ -157,46 +163,44 @@
             cancelBtn.style.display = 'none';
     });
 
-        // Fungsi edit kontak
-           function editContact(index) {
-                const contact = contacts[index];
-                nameInput.value = contact.name;
-                phoneInput.value = contact.phone;
-                emailInput.value = contact.email;
-                messageInput.value = contact.message;
+        // Fungsi untuk edit kontak
+            window.editContact = function(index) {
+            const contact = contacts[index];
+            nameInput.value = contact.name;
+            phoneInput.value = contact.phone;
+            emailInput.value = contact.email;
+            messageInput.value = contact.message;
 
-        editingIndex = index;
-        submitBtn.textContent = 'Update Kontak';
-        formTitle.textContent = 'Edit Kontak';
-        cancelBtn.style.display = 'inline-block';
+            editingIndex = index;
+            submitBtn.textContent = 'Update Kontak';
+            formTitle.textContent = 'Edit Kontak';
+           cancelBtn.style.display = 'inline-block';
     }
 
-        // Fungsi hapus kontak
-           function deleteContact(index) {
-                if(confirm('Yakin ingin menghapus kontak ini?')) {
-                    contacts.splice(index, 1);
-                    showContacts();
-        }
+       // Fungsi untuk hapus kontak
+            window.deleteContact = function(index) {
+            if (confirm('Yakin ingin menghapus kontak ini?')) {
+            contacts.splice(index, 1);
+            showContacts();
+      }
     }
 
-        // Filter kontak berdasarkan pencarian
-            searchBox.addEventListener('input', () => {
-            const keyword = searchBox.value.toLowerCase();
-            const filtered = contacts.filter(contact => {
-                return contact.name.toLowerCase().includes(keyword) ||
-                   contact.phone.toLowerCase().includes(keyword) ||
-                   (contact.email && contact.email.toLowerCase().includes(keyword)) ||
-                   (contact.message && contact.message.toLowerCase().includes(keyword));
-        });
+        // Pencarian kontak
+           searchBox.addEventListener('input', () => {
+           const keyword = searchBox.value.toLowerCase();
+           const filtered = contacts.filter(contact => {
+           return contact.name.toLowerCase().includes(keyword) ||
+               contact.phone.toLowerCase().includes(keyword) ||
+               (contact.email && contact.email.toLowerCase().includes(keyword)) ||
+               (contact.message && contact.message.toLowerCase().includes(keyword));
+      });
+
         showContacts(filtered);
     });
 
-        // Agar fungsi editContact dan deleteContact bisa dipanggil dari HTML (onclick)
-            window.editContact = editContact;
-            window.deleteContact = deleteContact;
-
-        // Tampilkan kontak pertama kali saat halaman dimuat
+        // Tampilkan daftar saat halaman pertama kali dibuka
             showContacts();
+        });
         </script>
     </body>
 </html>
